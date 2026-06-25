@@ -1,1 +1,458 @@
+openapi: 3.0.3
+info:
+  title: Smart Space API
+  description: |
+    Микросервисная система бронирования коворкингов и переговорных комнат.
+    
+    ## Микросервисы:
+    - **Identity Service** - аутентификация и пользователи
+    - **Catalog Service** - каталог помещений
+    - **Booking Service** - управление бронированиями
+  version: 1.0.0
+  contact:
+    name: Smart Space Team
 
+servers:
+  - url: http://localhost:5000
+    description: Identity Service
+  - url: http://localhost:5001
+    description: Catalog Service
+  - url: http://localhost:5002
+    description: Booking Service
+
+tags:
+  - name: Users
+    description: Operations about users
+  - name: Spaces
+    description: Operations about spaces/rooms
+  - name: Bookings
+    description: Operations about bookings
+
+paths:
+  # ========== IDENTITY SERVICE ==========
+  /api/v1/users:
+    post:
+      tags:
+        - Users
+      summary: Register a new user
+      operationId: registerUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/users/{id}:
+    get:
+      tags:
+        - Users
+      summary: Get user by ID
+      operationId: getUserById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ========== CATALOG SERVICE ==========
+  /api/v1/spaces:
+    get:
+      tags:
+        - Spaces
+      summary: Get all spaces
+      operationId: getAllSpaces
+      parameters:
+        - name: capacity
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [Active, Maintenance]
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SpaceResponse'
+
+  /api/v1/spaces/{id}:
+    get:
+      tags:
+        - Spaces
+      summary: Get space by ID
+      operationId: getSpaceById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpaceResponse'
+        '404':
+          description: Space not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/spaces/{id}/availability:
+    get:
+      tags:
+        - Spaces
+      summary: Check space availability for a date
+      operationId: getSpaceAvailability
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: date
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Available time slots
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AvailabilityResponse'
+        '404':
+          description: Space not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ========== BOOKING SERVICE ==========
+  /api/v1/bookings:
+    post:
+      tags:
+        - Bookings
+      summary: Create a new booking
+      operationId: createBooking
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBookingRequest'
+      responses:
+        '201':
+          description: Booking created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateBookingResponse'
+        '400':
+          description: Invalid input (e.g., endTime < startTime)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflict - time slot already booked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Space or User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    get:
+      tags:
+        - Bookings
+      summary: Get all bookings for current user
+      operationId: getUserBookings
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BookingResponse'
+
+  /api/v1/bookings/{id}:
+    get:
+      tags:
+        - Bookings
+      summary: Get booking by ID
+      operationId: getBookingById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingResponse'
+        '404':
+          description: Booking not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      tags:
+        - Bookings
+      summary: Cancel booking
+      operationId: cancelBooking
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Booking cancelled successfully
+        '400':
+          description: Cannot cancel (less than 1 hour before start)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Booking not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    # ========== REQUEST DTOs ==========
+    CreateUserRequest:
+      type: object
+      required:
+        - email
+        - name
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        password:
+          type: string
+          minLength: 8
+
+    CreateBookingRequest:
+      type: object
+      required:
+        - userId
+        - spaceId
+        - startTime
+        - endTime
+      properties:
+        userId:
+          type: string
+          format: uuid
+        spaceId:
+          type: string
+          format: uuid
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+
+    # ========== RESPONSE DTOs ==========
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        role:
+          type: string
+          enum: [User, Admin]
+        createdAt:
+          type: string
+          format: date-time
+
+    SpaceResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        capacity:
+          type: integer
+          minimum: 1
+        equipment:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+          enum: [Active, Maintenance]
+
+    AvailabilityResponse:
+      type: object
+      properties:
+        spaceId:
+          type: string
+          format: uuid
+        date:
+          type: string
+          format: date
+        availableSlots:
+          type: array
+          items:
+            type: object
+            properties:
+              startTime:
+                type: string
+                format: date-time
+              endTime:
+                type: string
+                format: date-time
+
+    CreateBookingResponse:
+      type: object
+      properties:
+        bookingId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [Active, Cancelled]
+        totalPrice:
+          type: number
+          format: decimal
+        createdAt:
+          type: string
+          format: date-time
+
+    BookingResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        spaceId:
+          type: string
+          format: uuid
+        spaceName:
+          type: string
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [Active, Cancelled]
+        totalPrice:
+          type: number
+          format: decimal
+        createdAt:
+          type: string
+          format: date-time
+
+    # ========== ERROR DTO ==========
+    ErrorResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          description: HTTP status code
+        errorCode:
+          type: string
+          description: Machine-readable error code
+          enum:
+            - INVALID_INPUT
+            - NOT_FOUND
+            - SPACE_ALREADY_BOOKED
+            - CANCELLATION_TOO_LATE
+            - UNAUTHORIZED
+        message:
+          type: string
+          description: Human-readable error message
+        timestamp:
+          type: string
+          format: date-time
+          description: Time when error occurred
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
