@@ -13,4 +13,5 @@
 
 ## Доменные модели (сущности):
 
+<img width="1006" height="404" alt="Screenshot 2026-06-25 171900" src="https://github.com/user-attachments/assets/8a4951c3-da1b-47ad-8851-de6afa3edaba" />
 
