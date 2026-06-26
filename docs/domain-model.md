@@ -13,7 +13,8 @@
 
 ## Доменные модели (сущности):
 
-<img width="1006" height="404" alt="Screenshot 2026-06-25 171900" src="https://github.com/user-attachments/assets/8a4951c3-da1b-47ad-8851-de6afa3edaba" />
+<img width="658" height="797" alt="image" src="https://github.com/user-attachments/assets/76af7594-7932-44da-8d9a-7f2d6c4d9030" />
+
 
 ## Бизнес-правила и ограничения:
 
