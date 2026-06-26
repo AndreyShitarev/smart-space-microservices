@@ -1,11 +1,12 @@
 # Проектирование API и контрактов (этап 2)
 
 ## Декомпозиция на микросервисы
-Мы разбиваем монолит на 3 независимых сервиса, у каждого из которых своя база данных.
+Мы разбиваем монолит на 4 независимых сервиса, у каждого из которых своя база данных.
 
 1. **Identity Service (User Service):** отвечает только за регистрацию, автоматизацию и профили. Ничего не знает о комнатах.
 2. **Catalog Serice (Space Service):** отвечает за витрину. Хранит данные о комнатах, их характеристиках и базовом расписании.
 3. **Booking Service:** отвечает за транзакции бронирования. Хранит данные о том, кто заброниовал, что забронировал, на какое время и когда.
+4. **PaymentService:** отвечает за оплату помещений после бронирования
 
 ## Описание API (REST Endpoints)
 
@@ -21,6 +22,11 @@
 * POST /api/v1/bookings - создать бронь
 * GET /api/v1/bookings/{Id} - детали брони
 * DELETE /api/v1/bookings/{Id} - отменить бронь
+
+**PaymentService**
+* POST /api/v1/payments - Создать платеж
+* GET  /api/v1/payments/{id} - Статус платежа
+* POST /api/v1/payments/{id}/confirm - подтвердить оплату
 
 ## Контракты (DTO)
 
@@ -67,7 +73,8 @@
 
 ## Диаграмма последовательности: Создание бронирования
 
-<img width="749" height="552" alt="image" src="https://github.com/user-attachments/assets/9fbb1807-6ce4-4641-8a75-1374397e3519" />
+<img width="948" height="951" alt="image" src="https://github.com/user-attachments/assets/67a0e947-2cb6-4914-9546-6e4daca757d9" />
+
 
 
 
@@ -82,5 +89,6 @@
 
 Диаграмма для случая, когда комната уже занята
 
-<img width="884" height="439" alt="Screenshot 2026-06-25 175720" src="https://github.com/user-attachments/assets/60026a18-4d2a-4d0a-96fe-5f04b77c66b8" />
+<img width="1040" height="858" alt="image" src="https://github.com/user-attachments/assets/56cac4fb-79fb-4118-9c89-0070f60d5585" />
+
 
