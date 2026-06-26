@@ -67,7 +67,8 @@
 
 ## Диаграмма последовательности: Создание бронирования
 
-<img width="1078" height="692" alt="Screenshot 2026-06-25 180344" src="https://github.com/user-attachments/assets/044e4104-9d7c-46cb-bdc3-f91fc0dc8ec1" />
+<img width="749" height="552" alt="image" src="https://github.com/user-attachments/assets/9fbb1807-6ce4-4641-8a75-1374397e3519" />
+
 
 
 ### Описание сценария:
